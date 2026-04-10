@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARTIST NAME — Track Title</title>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Radio Canada', sans-serif;
+    background: #0a0a0a;
+    color: #f0f0f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+  }
+
+  /* Animated background blobs */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    animation: drift linear infinite;
+  }
+
+  .blob:nth-child(1) {
+    width: 500px; height: 500px;
+    background: #7b2fff;
+    top: -150px; left: -100px;
+    animation-duration: 8s;
+  }
+  .blob:nth-child(2) {
+    width: 400px; height: 400px;
+    background: #00c2ff;
+    bottom: -120px; right: -80px;
+    animation-duration: 10s;
+    animation-direction: reverse;
+  }
+  .blob:nth-child(3) {
+    width: 300px; height: 300px;
+    background: #ff5500;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-duration: 6s;
+  }
+
+  @keyframes drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    25%  { transform: translate(40px, 30px) scale(1.05); }
+    50%  { transform: translate(20px, 60px) scale(0.95); }
+    75%  { transform: translate(-30px, 20px) scale(1.03); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 50%;
+    animation: float linear infinite;
+  }
+
+  @keyframes float {
+    0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-10vh) translateX(var(--dx)); opacity: 0; }
+  }
+
+  /* Grid overlay */
+  .grid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .card { position: relative; z-index: 1; }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .artwork {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #1a1a1a;
+    border: 1px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .artwork img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .meta {
+    margin-top: 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .meta .label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #FF8C00;
+    margin-bottom: 0.6rem;
+    animation: blink 1.5s ease-in-out infinite;
+    border: 1px solid #FF8C00;
+    border-radius: 4px;
+    padding: 3px 10px;
+  }
+
+  .meta .title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #f5f5f5;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .meta .artist {
+    font-size: 13px;
+    font-weight: 400;
+    color: #777;
+    margin-top: 0.3rem;
+    letter-spacing: 0.04em;
+  }
+
+  .release-info {
+    margin-top: 1.5rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .release-date {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .release-date span {
+    color: #f5f5f5;
+    font-weight: 500;
+  }
+
+  .countdown {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .countdown-item {
+    text-align: center;
+  }
+
+  .countdown-value {
+    font-size: 33px;
+    font-weight: 600;
+    color: #f5f5f5;
+    line-height: 1;
+    display: block;
+  }
+
+  .countdown-label {
+    font-size: 11px;
+    color: #666;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+  }
+
+  .countdown-separator {
+    font-size: 33px;
+    color: #333;
+    font-weight: 300;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: #1e1e1e;
+    margin: 1.5rem 0;
+  }
+
+  .platforms {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #e8e8e8;
+    text-decoration: none;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .btn:active {
+    transform: scale(0.985);
+  }
+
+  .btn .icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .btn .name {
+    flex: 1;
+  }
+
+  .btn .badge {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #1e1e1e;
+    color: #555;
+    border: 1px solid #252525;
+  }
+
+  .btn .arrow {
+    font-size: 20px;
+    color: #444;
+    transition: color 0.15s;
+  }
+
+  .btn:hover .arrow { color: #666; }
+
+  .btn.spotify      .icon-wrap { background: #0f2a18; }
+  .btn.apple        .icon-wrap { background: #2a0f10; }
+  .btn.amazon       .icon-wrap { background: #081c26; }
+  .btn.tidal        .icon-wrap { background: #1e1e1e; }
+  .btn.deezer       .icon-wrap { background: #1c0f2a; }
+  .btn.soundcloud   .icon-wrap { background: #2a1500; }
+  .btn.beatport     .icon-wrap { background: #0a1f17; }
+  .btn.youtubemusic .icon-wrap { background: #2a0a0a; }
+
+  .footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 11px;
+    color: #333;
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+</div>
+
+<div class="grid-overlay"></div>
+
+<div class="particles" id="particles"></div>
+
+<div class="card">
+
+  <!-- ARTWORK — replace src with your image file -->
+  <div class="artwork">
+    <!-- <img src="artwork.jpg" alt="Cover"> -->
+    artwork
+  </div>
+
+  <!-- META -->
+  <div class="meta">
+    <p class="label">Pre Save</p>
+    <p class="title">Track Title</p>
+    <p class="artist">Artist Name</p>
+  </div>
+
+  <!-- RELEASE DATE & COUNTDOWN -->
+  <div class="release-info">
+    <p class="release-date">Releases on <span id="releaseDate"></span></p>
+    <div class="countdown">
+      <div class="countdown-item">
+        <span class="countdown-value" id="days">00</span>
+        <span class="countdown-label">Days</span>
+      </div>
+      <div class="countdown-separator">|</div>
+      <div class="countdown-item">
+        <span class="countdown-value" id="hours">00</span>
+        <span class="countdown-label">Hours</span>
+      </div>
+      <div class="countdown-separator">|</div>
+      <div class="countdown-item">
+        <span class="countdown-value" id="minutes">00</span>
+        <span class="countdown-label">Min</span>
+      </div>
+      <div class="countdown-separator">|</div>
+      <div class="countdown-item">
+        <span class="countdown-value" id="seconds">00</span>
+        <span class="countdown-label">Sec</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PLATFORM LINKS — replace # with your URLs -->
+  <div class="platforms">
+
+    <a class="btn spotify" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 0 1-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 0 1-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 0 1 .207.857zm1.223-2.722a.78.78 0 0 1-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 0 1-.973-.519.781.781 0 0 1 .52-.973c3.632-1.102 8.147-.568 11.233 1.329a.78.78 0 0 1 .257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 1 1-.543-1.793c3.572-1.082 9.506-.873 13.254 1.482a.937.937 0 0 1-.894 1.638-.94.94 0 0 1-.2-.17z"/>
+        </svg>
+      </span>
+      <span class="name">Spotify</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn apple" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="#FC3C44" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+        </svg>
+      </span>
+      <span class="name">Apple Music</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn soundcloud" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 15.5q0-1 .7-1.7A2.3 2.3 0 0 1 4.4 13l.4.04A5 5 0 0 1 9.5 9a5 5 0 0 1 4.8 3.6A2.5 2.5 0 0 1 16.5 12a2.5 2.5 0 0 1 2.5 2.5v1A2 2 0 0 1 17 17.5H4a2 2 0 0 1-2-2z" fill="#FF5500"/>
+          <path d="M2 15v1" stroke="#FF5500" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="name">SoundCloud</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn beatport" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="9" cy="15" r="4" stroke="#01FF95" stroke-width="1.8"/>
+          <path d="M13 15V5" stroke="#01FF95" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M13 7a4 4 0 0 1 4 4" stroke="#01FF95" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="name">Beatport</span>
+      <span class="badge">Extended</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn youtubemusic" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="#FF0000" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21.582 7.185a2.506 2.506 0 0 0-1.762-1.762C18.254 5 12 5 12 5s-6.254 0-7.82.423a2.506 2.506 0 0 0-1.762 1.762C2 8.75 2 12 2 12s0 3.25.418 4.815a2.506 2.506 0 0 0 1.762 1.762C5.746 19 12 19 12 19s6.254 0 7.82-.423a2.506 2.506 0 0 0 1.762-1.762C22 15.25 22 12 22 12s0-3.25-.418-4.815zM10 15V9l5.2 3-5.2 3z"/>
+        </svg>
+      </span>
+      <span class="name">YouTube Music</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn amazon" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3.5 17.5s3.5-1.5 8.5-1.5 8.5 1.5 8.5 1.5" stroke="#00A8E1" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M12 3v11M8 5.5v6M16 5.5v6M5 8v3M19 8v3" stroke="#00A8E1" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="name">Amazon Music</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn tidal" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 8l4-4 4 4-4 4L4 8z" fill="#aaa"/>
+          <path d="M12 8l4-4 4 4-4 4-4-4z" fill="#ddd"/>
+          <path d="M8 16l4-4 4 4-4 4-4-4z" fill="#bbb"/>
+        </svg>
+      </span>
+      <span class="name">Tidal</span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="btn deezer" href="#">
+      <span class="icon-wrap">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="#A238FF" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.944 17.369h3.285v1.738h-3.285zm-4.872 0h3.285v1.738h-3.285zm-4.873 0h3.285v1.738H9.199zm-4.872 0H7.61v1.738H4.327zM18.944 14.574h3.285v1.737h-3.285zm-4.872 0h3.285v1.737h-3.285zm-4.873 0h3.285v1.737H9.199zM18.944 11.779h3.285v1.737h-3.285zm-4.872 0h3.285v1.737h-3.285zm-4.873 0h3.285v1.737H9.199zM18.944 8.984h3.285v1.738h-3.285zm-4.872 0h3.285v1.738h-3.285zM18.944 6.189h3.285v1.738h-3.285z"/>
+        </svg>
+      </span>
+      <span class="name">Deezer</span>
+      <span class="arrow">›</span>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    &copy; 2026 · Artist Name<br>
+    powered by dakoyas lab.
+  </div>
+
+</div>
+</body>
+<script>
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 2.5 + 1;
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${size}px;
+      height: ${size}px;
+      --dx: ${(Math.random() - 0.5) * 120}px;
+      animation-duration: ${Math.random() * 15 + 10}s;
+      animation-delay: ${Math.random() * 15}s;
+      opacity: 0;
+    `;
+    container.appendChild(p);
+  }
+
+  // COUNTDOWN SETTINGS - Change this date for your release
+  const releaseDate = new Date('2026-10-04T00:00:00').getTime();
+  
+  // Format and display release date
+  const releaseDateEl = document.getElementById('releaseDate');
+  const dateOptions = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric'
+  };
+  releaseDateEl.textContent = new Date(releaseDate).toLocaleDateString('en-US', dateOptions);
+
+  // Countdown function
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = releaseDate - now;
+
+    if (distance < 0) {
+      document.getElementById('days').textContent = '00';
+      document.getElementById('hours').textContent = '00';
+      document.getElementById('minutes').textContent = '00';
+      document.getElementById('seconds').textContent = '00';
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById('days').textContent = String(days).padStart(2, '0');
+    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+  }
+
+  // Update countdown every second
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
